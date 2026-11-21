@@ -1,0 +1,38 @@
+VERIFICATION REPORT — 21 NOVEMBER 2026
+
+JavaScript syntax: app.js and data.js passed Node syntax checks.
+
+Automated checks passed:
+1. 4,872 unique lines; source and joined assessment sums agree exactly.
+2. Each component benchmark equals assessment plus relief.
+3. Net payment arithmetic reconciles and payments do not exceed assessments.
+4. All ten module renderers generate output without NaN/undefined/Infinity.
+5. Combined port, chapter, year and tax filters select the correct population.
+6. Zero-change mechanical replay reproduces baseline assessments and receipts.
+7. Higher duties increase liability; negative elasticity reduces declared value.
+8. Removing relief reconstructs the benchmark.
+9. All forecast horizons have valid bounds containing point predictions.
+10. Empty-filter renderers produce finite results.
+11. Simulated additions and saved snapshot reconstruction are deterministic.
+12. Eligible sparse forecasts use a complete 58-month calendar.
+
+Browser checks:
+All ten navigation links opened the expected module, with no console errors.
+Changing port filtered the population and headline results.
+Advanced filters expanded successfully.
+Pagination moved from rows 1-8 to 9-16.
+HS search reduced the table to the matching population.
+A declaration dialog displayed header, trader, tariff and payment lineage.
+Scenario slider changes updated results; behavioural mode enabled elasticity.
+Save/Load recovered the saved duty-change parameter and source snapshot.
+CSV export produced a downloadable file.
+Desktop and mobile responsive layouts were inspected.
+
+Verification is a prototype smoke and arithmetic check, not institutional
+security certification, legal tax validation, econometric model validation
+or a guarantee of behaviour across every browser and future dataset.
+
+Live browser verification: simulated updates advanced the filtered 2026
+population from 840 to 850 lines and snapshot DEMO-001 to DEMO-011.
+Mobile viewport 390px: no document-level horizontal overflow on overview
+or scenario studio. Desktop layout checked at 1440px.

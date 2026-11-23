@@ -1,38 +1,41 @@
-VERIFICATION REPORT — 21 NOVEMBER 2026
+VERSION 3 VALIDATION — 23 November 2026
 
-JavaScript syntax: app.js and data.js passed Node syntax checks.
+PASS 4,872 unique lines and exact source joins
+PASS Benchmark equals assessment plus relief for every component
+PASS Payments reconcile and never exceed assessment
+PASS All ten renderers generate finite output
+PASS Global filters select consistent populations
+PASS Zero-change replay reproduces baseline
+PASS Higher duty increases liability and negative elasticity reduces value
+PASS Full relief removal reconstructs benchmark
+PASS Forecast horizons and intervals are valid
+PASS Empty filters return finite output
+PASS Live stream and deterministic snapshot restore
+PASS Sparse forecast uses complete monthly calendar
+PASS Every KPI has complete explanation and evidence
+PASS CIF separates FOB, freight and insurance
+PASS Surcharge uses duty, CISS uses FOB, ETLS respects origin
+PASS VAT uses explicit cascading component base
+PASS FOB profiles never double-charge CISS
+PASS Duty scenarios cascade into surcharge and VAT
+PASS Collection evidence matches headline, without double counting
+PASS Trade-only filters exclude unrelated receipt ledgers
+PASS Comparison uses equal calendar windows and exact bridge
+PASS Scenario detail rows reconcile to proposal and expected cash
+PASS Unchanged-policy projection reproduces the baseline
+PASS VAT 10 percent increases bills and projected cash
+PASS VAT cut produces separately defined cash forgone
+PASS Policy starts and phased coverage are respected
+PASS Targeted VAT changes leave other products unchanged
+PASS Policy forecast respects selected cutoff without future leakage
+PASS Behavioural sensitivity contains central forecast
+PASS Revenue shares and contributions reconcile to 100 percent
+PASS Forecast component totals reconcile to government cash totals
+PASS Short history and empty filters do not invent forecasts
+PASS Risk KPIs reconcile to follow-up records
+33 checks passed.
 
-Automated checks passed:
-1. 4,872 unique lines; source and joined assessment sums agree exactly.
-2. Each component benchmark equals assessment plus relief.
-3. Net payment arithmetic reconciles and payments do not exceed assessments.
-4. All ten module renderers generate output without NaN/undefined/Infinity.
-5. Combined port, chapter, year and tax filters select the correct population.
-6. Zero-change mechanical replay reproduces baseline assessments and receipts.
-7. Higher duties increase liability; negative elasticity reduces declared value.
-8. Removing relief reconstructs the benchmark.
-9. All forecast horizons have valid bounds containing point predictions.
-10. Empty-filter renderers produce finite results.
-11. Simulated additions and saved snapshot reconstruction are deterministic.
-12. Eligible sparse forecasts use a complete 58-month calendar.
+Browser checks: all ten navigation tabs rendered; VAT10/VAT5 and typed VAT changes updated KPIs; behavioural mode updated results; KPI detail displayed monthly evidence; guide search filtered terms; save/load restored the six-month horizon; impact CSV downloaded. Revenue view has three KPI cards, no prior-year card, and a rendered donut. Mobile tables scroll internally. Browser error log empty at final inspection.
+Limit: tests validate demo arithmetic and UI, not official data accuracy, legal applicability or forecasting validity.
 
-Browser checks:
-All ten navigation links opened the expected module, with no console errors.
-Changing port filtered the population and headline results.
-Advanced filters expanded successfully.
-Pagination moved from rows 1-8 to 9-16.
-HS search reduced the table to the matching population.
-A declaration dialog displayed header, trader, tariff and payment lineage.
-Scenario slider changes updated results; behavioural mode enabled elasticity.
-Save/Load recovered the saved duty-change parameter and source snapshot.
-CSV export produced a downloadable file.
-Desktop and mobile responsive layouts were inspected.
-
-Verification is a prototype smoke and arithmetic check, not institutional
-security certification, legal tax validation, econometric model validation
-or a guarantee of behaviour across every browser and future dataset.
-
-Live browser verification: simulated updates advanced the filtered 2026
-population from 840 to 850 lines and snapshot DEMO-001 to DEMO-011.
-Mobile viewport 390px: no document-level horizontal overflow on overview
-or scenario studio. Desktop layout checked at 1440px.
+VERSION 3.1: 33 regression checks passed after control changes. Browser verified opening the case, VAT10 results and graphs, downloaded text brief, return to assumptions, removed controls absent and no console errors. Download captures the reviewed brief so a simulated stream cannot change the downloaded case after review.

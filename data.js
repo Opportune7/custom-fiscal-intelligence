@@ -1,47 +1,37 @@
-/* Deterministic synthetic records. Not official rates, policy instruments or Customs data. */
-(function(root){
-'use strict';
-const products=[['100630','10','Cereals','Milled rice',.20],['270900','27','Mineral fuels','Crude petroleum',.05],['300490','30','Pharmaceuticals','Medicaments',.05],['390120','39','Plastics','Polyethylene',.10],['720839','72','Iron & steel','Flat-rolled steel',.10],['840890','84','Machinery','Industrial engines',.05],['850440','85','Electrical','Static converters',.10],['870323','87','Vehicles','Passenger vehicles',.35],['180100','18','Cocoa','Cocoa beans',.05],['520100','52','Cotton','Raw cotton',.05]];
-const ports=['Apapa','Tin Can Island','Onne','Port Harcourt','Kano','Lagos Airport'];
-const countries=['China','India','Netherlands','United States','Germany','Ghana'];
-const procedures=['Home use','Bonded warehouse','Temporary admission','Free zone'];
-const schemes=['None','Industrial concession','Medical relief','Regional preference'];
-const components=['ID','VAT','Levy','EXC'];
-let seed=20261121;
+/* Nigeria-context synthetic demo v2. Policy profiles are assumptions, not certified tariff schedules. */
+(function(root){'use strict';
+const products=[['100630','10','Cereals','Milled rice',.20],['270900','27','Mineral fuels','Crude petroleum',.05],['300490','30','Pharmaceuticals','Medicaments',0],['390120','39','Plastics','Polyethylene',.10],['720839','72','Iron & steel','Flat-rolled steel',.10],['840890','84','Machinery','Industrial engines',.05],['850440','85','Electrical','Static converters',.10],['870323','87','Vehicles','Passenger vehicles',.20],['180100','18','Cocoa','Cocoa beans',.05],['520100','52','Cotton','Raw cotton',.05],['220300','22','Beverages','Beer (excise example)',.20],['240220','24','Tobacco','Cigarettes (excise example)',.35]];
+const ports=['Apapa','Tin Can Island','Onne','Port Harcourt','Kano','Lagos Airport'],countries=['China','India','Netherlands','United States','Germany','Ghana'],procedures=['Home use','Bonded warehouse','Temporary admission','Free zone'],schemes=['None','Industrial concession','Medical relief','Regional preference'];
+const componentInfo={ID:{name:'Import duty',base:'CIF × illustrative HS duty rate',scope:'Declaration'},EXC:{name:'Import excise duty',base:'Eligible beverage/tobacco example: 20% × (CIF + duty); illustrative, not a legal schedule',scope:'Declaration'},SUR:{name:'7% port surcharge',base:'7% × payable import duty; distinct from NCS revenue-retention arrangements',scope:'Declaration'},ETLS:{name:'0.5% ECOWAS levy',base:'0.5% × CIF for non-ECOWAS origin in this fixture; Ghana excluded',scope:'Declaration'},CISS:{name:'1% CISS charge',base:'1% × FOB in the CISS demonstration profile',scope:'Declaration'},FOB4:{name:'4% FOB charge',base:'4% × FOB only in the alternative scenario; CISS then switched off',scope:'Scenario only'},VAT:{name:'Import VAT',base:'7.5% × (CIF + duty + import excise + port surcharge + ECOWAS levy), less explicit VAT relief; CISS / FOB4 excluded by demo assumption',scope:'Declaration'},EXPORT:{name:'Export / special levies',base:'No rate or eligible population supplied; not modelled, not assumed legally zero',scope:'Not modelled'},DEXC:{name:'Domestic excise collections',base:'Recorded receipt amounts; not computed from import CIF',scope:'Separate receipts'},FEES:{name:'Fees',base:'Recorded administrative fee receipts',scope:'Separate receipts'},PEN:{name:'Penalties',base:'Recorded penalty receipts; no universal penalty rate assumed',scope:'Separate receipts'},AUCTION:{name:'Auction proceeds',base:'Recorded sale receipts; not duties or trade value',scope:'Separate receipts'}};
+const components=['ID','EXC','SUR','ETLS','CISS','FOB4','VAT','EXPORT'],otherComponents=['DEXC','FEES','PEN','AUCTION'];let seed=20261121;
 function random(){seed=(Math.imul(1664525,seed)+1013904223)>>>0;return seed/4294967296;}
-const db={headers:[],lines:[],assessments:[],payments:[],approvals:[],audits:[],rules:[],meta:{snapshot:'DEMO-001',version:'synthetic-v1',cutoff:'2026-10-31',seed:20261121}};
-for(let i=0;i<products.length;i++) db.rules.push({id:'RULE-'+products[i][0],hs:products[i][0],start:'2022-01-01',end:'2026-12-31',duty:products[i][4],vat:.075,levy:.02,excise:i===7?.05:0,status:'Illustrative; not legally validated'});
-for(let i=1;i<=36;i++) db.approvals.push({id:'APR-'+String(i).padStart(3,'0'),scheme:schemes[1+(i%3)],trader:'TR-'+String(i).padStart(4,'0'),ceiling:0,expiry:'2026-12-31',legalBasis:'DEMO instrument / policy validation required'});
-function createRow(y,m,i,live=false){
- const idx=Math.floor(random()*products.length),p=products[idx];
- const id=(live?'LIVE-':'DEC-')+y+String(m+1).padStart(2,'0')+'-'+String(i).padStart(4,'0');
- const flow=random()<.19?'Export':'Import',port=ports[Math.floor(random()*ports.length)],country=countries[Math.floor(random()*countries.length)];
- const trader='TR-'+String(1+Math.floor(random()*120)).padStart(4,'0');
- const value=Math.round((60e6+random()*1300e6)*(1+(y-2022)*.13)*(1+.12*Math.sin((m-2)*Math.PI/6))*(idx===1?2.3:1));
- const scheme=flow==='Import'&&random()<.3?schemes[1+Math.floor(random()*3)]:'None';
- const approval=scheme==='None'?null:db.approvals.filter(a=>a.scheme===scheme)[Math.floor(random()*12)];
- const header={id,date:`${y}-${String(m+1).padStart(2,'0')}-${String(1+Math.floor(random()*28)).padStart(2,'0')}`,year:y,month:m+1,flow,port,country,trader:approval?approval.trader:trader,cohort:parseInt((approval?approval.trader:trader).slice(3))<50?'Established':'Emerging',procedure:flow==='Export'?'Export':procedures[Math.floor(random()*procedures.length)],status:'Accepted'};
- const line={id:id+'-1',declarationId:id,hs:p[0],chapter:p[1],section:p[2],description:p[3],value,weight:Math.round(value/(500+idx*270)),unit:'kg',scheme,approvalId:approval?.id||null,band:Math.round(p[4]*100)+'%',policy:idx===5?'Machinery pilot':'Baseline'};
- db.headers.push(header);db.lines.push(line);
- const rule=db.rules[idx];let total=0;
- components.forEach((component,k)=>{
-  const rate=flow==='Export'?0:[rule.duty,rule.vat,rule.levy,rule.excise][k];
-  // Simplified independent bases; no assertion about Nigeria's statutory tax waterfall.
-  const benchmark=Math.round(value*rate), relief=Math.round(benchmark*(scheme==='None'?0:scheme==='Regional preference'?.2:scheme==='Medical relief'?.8:.45));
-  const assessed=benchmark-relief,assessmentId=line.id+'-'+component;
-  db.assessments.push({id:assessmentId,lineId:line.id,component,base:value,rate,benchmark,relief,assessed,ruleId:rule.id});total+=assessed;
-  const paid=Math.round(assessed*(.89+random()*.105)),refund=Math.round(paid*(random()<.12?.015:0));
-  db.payments.push({id:'PAY-'+assessmentId,assessmentId,date:header.date,gross:paid,refund,reversal:0,net:paid-refund});
- });
- const flagged=random()<.13,overdue=['Bonded warehouse','Temporary admission'].includes(header.procedure)&&random()<.28;
- db.audits.push({lineId:line.id,flag:flagged?['Valuation review','Classification review','Origin review'][Math.floor(random()*3)]:'No flag',overdue,open:overdue||random()<.22,bond:header.procedure==='Home use'||flow==='Export'?0:Math.round(total*1.1),additional:flagged?Math.round(total*.06):0,recovery:flagged?Math.round(total*.04):0,exportSupport:flow==='Export'&&random()<.3?Math.round(value*.025):0});
- return id;
+const db={headers:[],lines:[],assessments:[],payments:[],approvals:[],audits:[],rules:[],otherReceipts:[],meta:{snapshot:'NG-DEMO-001',version:'synthetic-ng-v2',cutoff:'2026-10-31',seed:20261121,chargeProfile:'ciss-demo',policyStatus:'Illustrative CISS baseline; not a statement of current legal applicability'}};
+products.forEach(p=>db.rules.push({id:'DEMO-RULE-'+p[0],hs:p[0],start:'2022-01-01',end:'2026-12-31',duty:p[4],vat:.075,excise:['22','24'].includes(p[1])?.20:0,status:'Demonstration assumptions only; effective-date legal validation required'}));
+for(let i=1;i<=36;i++)db.approvals.push({id:'APR-'+String(i).padStart(3,'0'),scheme:schemes[1+(i%3)],trader:'TR-'+String(i).padStart(4,'0'),ceiling:0,expiry:'2026-12-31',legalBasis:'Synthetic approval; scope requires legal validation'});
+function calculate(r,{delta=0,retention=100,chargeProfile='ciss-demo',vatRate=7.5,exciseRate=null}={}){
+ const dutyRate=Math.max(0,r.dutyRate+delta/100),isImport=r.flow==='Import',cif=r.value,fob=r.fob;
+ const dutyRelief=r.scheme==='Industrial concession'?.45:r.scheme==='Medical relief'?.8:r.scheme==='Regional preference'?.2:0,vatRelief=r.scheme==='Medical relief'?.8:0;
+ function amounts(rel){const out={};function add(c,base,rate,factor=1){out[c]={base,rate,amount:Math.round(base*rate*factor)};}
+  if(!isImport){components.forEach(c=>add(c,0,0));return out;}
+  add('ID',cif,dutyRate,1-dutyRelief*rel);add('EXC',cif+out.ID.amount,(exciseRate===null?r.exciseRate:(r.exciseRate>0?exciseRate/100:0)));add('SUR',out.ID.amount,.07);add('ETLS',cif,r.country==='Ghana'?0:.005);add('CISS',fob,chargeProfile==='ciss-demo'?.01:0);add('FOB4',fob,chargeProfile==='fob4-demo'?.04:0);
+  const vatBase=cif+['ID','EXC','SUR','ETLS'].reduce((s,c)=>s+out[c].amount,0);add('VAT',vatBase,vatRate/100,1-vatRelief*rel);add('EXPORT',0,0);return out;
+ }
+ const normal=amounts(0),actual=amounts(retention/100);return components.map(component=>({component,base:actual[component].base,benchmarkBase:normal[component].base,rate:actual[component].rate,benchmark:normal[component].amount,assessed:actual[component].amount,relief:normal[component].amount-actual[component].amount}));
 }
-for(let y=2022;y<=2026;y++)for(let m=0;m<(y===2026?10:12);m++)for(let i=0;i<84;i++)createRow(y,m,i);
-function refreshCeilings(){const use=new Map();db.lines.forEach(l=>{if(l.approvalId) use.set(l.id,l.approvalId);});const totals={};db.assessments.forEach(a=>{const id=use.get(a.lineId);if(id)totals[id]=(totals[id]||0)+a.relief;});db.approvals.forEach(a=>a.ceiling=Math.ceil((totals[a.id]||1)*1.3));}
-refreshCeilings();
+function createRow(y,m,i,live=false){const idx=Math.floor(random()*products.length),p=products[idx],id=(live?'LIVE-':'DEC-')+y+String(m+1).padStart(2,'0')+'-'+String(i).padStart(4,'0'),flow=random()<.19?'Export':'Import',port=ports[Math.floor(random()*ports.length)],country=countries[Math.floor(random()*countries.length)],trader='TR-'+String(1+Math.floor(random()*120)).padStart(4,'0');
+ const value=Math.round((60e6+random()*1300e6)*(1+(y-2022)*.13)*(1+.12*Math.sin((m-2)*Math.PI/6))*(idx===1?2.3:1)),fob=flow==='Import'?Math.round(value*.88):value,freight=flow==='Import'?Math.round(value*.10):0,insurance=flow==='Import'?value-fob-freight:0;
+ let scheme=flow==='Import'&&random()<.3?schemes[1+Math.floor(random()*3)]:'None';if(scheme==='Regional preference'&&country!=='Ghana')scheme='None';
+ const approval=scheme==='None'?null:db.approvals.filter(a=>a.scheme===scheme)[Math.floor(random()*12)],finalTrader=approval?approval.trader:trader;
+ const header={id,date:`${y}-${String(m+1).padStart(2,'0')}-${String(1+Math.floor(random()*28)).padStart(2,'0')}`,year:y,month:m+1,flow,port,country,trader:finalTrader,cohort:parseInt(finalTrader.slice(3))<50?'Established':'Emerging',procedure:flow==='Export'?'Export':procedures[Math.floor(random()*procedures.length)],status:'Accepted'};
+ const line={id:id+'-1',declarationId:id,hs:p[0],chapter:p[1],section:p[2],description:p[3],value,fob,freight,insurance,valueBasis:flow==='Import'?'CIF':'FOB',dutyRate:p[4],exciseRate:['22','24'].includes(p[1])?.20:0,weight:Math.round(value/(500+idx*270)),unit:'kg',scheme,approvalId:approval?.id||null,band:Math.round(p[4]*100)+'%',policy:idx===5?'Machinery pilot':'Baseline',chargeProfile:'ciss-demo'};
+ db.headers.push(header);db.lines.push(line);let total=0;calculate({...header,...line}).forEach(t=>{const assessmentId=line.id+'-'+t.component;db.assessments.push({...t,id:assessmentId,lineId:line.id,ruleId:'DEMO-RULE-'+p[0]});total+=t.assessed;const paid=Math.round(t.assessed*(.89+random()*.105)),refund=Math.round(paid*(random()<.12?.015:0));db.payments.push({id:'PAY-'+assessmentId,assessmentId,date:header.date,gross:paid,refund,reversal:0,net:paid-refund});});
+ const special=flow==='Import'&&header.procedure!=='Home use',flagged=random()<.13,overdue=special&&random()<.28,open=special&&(overdue||random()<.22);
+ db.audits.push({lineId:line.id,flag:flagged?['Valuation review','Classification review','Origin review'][Math.floor(random()*3)]:'No flag',overdue,open,bond:special?Math.round(total*1.1):0,additional:flagged?Math.round(total*.06):0,recovery:flagged?Math.round(total*.04):0,exportSupport:flow==='Export'&&random()<.3?Math.round(value*.025):0});
+}
+for(let y=2022;y<=2026;y++)for(let m=0;m<(y===2026?10:12);m++){for(let i=0;i<84;i++)createRow(y,m,i);ports.forEach((port,pi)=>otherComponents.forEach((component,ci)=>{const gross=Math.round((20e6+random()*100e6)*(component==='DEXC'?6:1)*(1+(y-2022)*.1)),refund=Math.round(gross*(ci===0?.003:0));db.otherReceipts.push({id:`OTHER-${y}${String(m+1).padStart(2,'0')}-${pi}-${component}`,date:`${y}-${String(m+1).padStart(2,'0')}-28`,year:y,month:m+1,port,component,gross,refund,reversal:0,net:gross-refund,source:'Synthetic separate accounting receipt'});}));}
+const approvalByLine=new Map(db.lines.map(l=>[l.id,l.approvalId])),used={};db.assessments.forEach(a=>{const id=approvalByLine.get(a.lineId);if(id)used[id]=(used[id]||0)+a.relief;});db.approvals.forEach(a=>a.ceiling=Math.ceil((used[a.id]||1)*1.3));
 function join(){const h=new Map(db.headers.map(x=>[x.id,x])),p=new Map(db.payments.map(x=>[x.assessmentId,x])),a=new Map(),u=new Map(db.audits.map(x=>[x.lineId,x]));db.assessments.forEach(x=>{if(!a.has(x.lineId))a.set(x.lineId,[]);a.get(x.lineId).push({...x,payment:p.get(x.id)});});return db.lines.map(l=>({...h.get(l.declarationId),...l,audit:u.get(l.id),taxes:a.get(l.id)||[]}));}
 let tick=0;const initialSeed=seed,initialLengths=Object.fromEntries(Object.entries(db).filter(([,v])=>Array.isArray(v)).map(([k,v])=>[k,v.length]));
-root.FiscalData={db,products,ports,countries,procedures,schemes,components,join,get streamCount(){return tick;},append(){tick++;createRow(2026,9,84+tick,true);db.meta.snapshot='DEMO-'+String(tick+1).padStart(3,'0');return join();},reset(){Object.entries(initialLengths).forEach(([k,n])=>db[k].length=n);seed=initialSeed;tick=0;db.meta.snapshot='DEMO-001';return join();},restore(count){this.reset();for(let i=0;i<count;i++)this.append();return join();}};
+root.FiscalData={db,products,ports,countries,procedures,schemes,components,otherComponents,componentInfo,calculate,join,get streamCount(){return tick;},append(){tick++;createRow(2026,9,84+tick,true);db.meta.snapshot='NG-DEMO-'+String(tick+1).padStart(3,'0');return join();},reset(){Object.entries(initialLengths).forEach(([k,n])=>db[k].length=n);seed=initialSeed;tick=0;db.meta.snapshot='NG-DEMO-001';return join();},restore(count){this.reset();for(let i=0;i<count;i++)this.append();return join();}};
 if(typeof module!=='undefined')module.exports=root.FiscalData;
 })(typeof window!=='undefined'?window:globalThis);

@@ -1,0 +1,19 @@
+VERSION 3 POLICY REVIEW
+1. Executive overview separates cash received, bills, unpaid balance and concession cost.
+2. Revenue drivers remove the prior-year headline; donut and detailed contribution table explain composition and change. Prior amounts remain comparison evidence.
+3. Tariff intelligence uses charges per NGN100 CIF with explicit denominators rather than ambiguous burden labels.
+4. Incentives explain fiscal cost, beneficiaries, use and approval ceilings; these are not assured recoverable cash.
+5. Imports explain values, quantities, products and concentration.
+6. Exports show recorded trade and support; absent special-levy rules remain unmodelled.
+7. Revenue risks & actions replaces the vague regime/compliance presentation with a review queue and ownership questions.
+8. Policy simulation studio combines assumptions, fiscal effects and future baseline/proposal graphs. Rate changes, targeting, coverage and behavioural sensitivity update the results immediately.
+9. Data quality distinguishes linkage/reconciliation from legal certification and production readiness.
+10. Policymaker guide explains the workflow, terminology, formulas, denominators and limits.
+
+Illustrative default population, 12-month mechanical VAT example:
+Baseline collections approximately NGN289.77bn.
+VAT10% approximately NGN314.65bn; additional cash NGN24.88bn; cash forgone zero.
+VAT5% approximately NGN264.89bn; cash forgone NGN24.88bn.
+These are outputs from synthetic fixtures, not estimates of Nigeria's actual fiscal outcome.
+
+VERSION 3.1: Added View policy case pop-out with fiscal summary, two future-impact graphs, trade comparisons, all assumptions and scope, interpretation and brief download. Removed save/load and reproducible case controls.
